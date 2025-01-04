@@ -1,0 +1,53 @@
+library(tidyverse)
+nobel <- read_csv("nobel.csv")
+head(nobel)
+table(nobel$sex)
+top_gender <- "Male"
+data.frame(table(nobel$birth_country)) %>% 
+  arrange(desc(Freq))
+top_country <- "United States of America"
+names(nobel)
+prop_US_winners <- nobel %>% 
+  mutate(usa_born_winner = birth_country == "United States of America", 
+         decade = floor(year/10)*10) %>% 
+  group_by(decade)%>%
+  summarise(proportion = mean(usa_born_winner, na.rm =  TRUE))
+prop_US_winners
+ggplot(prop_US_winners, aes(decade, proportion))+
+  geom_point()
+max_decade_usa <- 2000
+
+#now calculating the proprotion of female laurates per decade
+prop_female_winners <- nobel %>% 
+  mutate(female_winner = sex == "Female", 
+         decade = floor(year/10)*10) %>% 
+  group_by(decade, category) %>% 
+  summarise(proportion = mean(female_winner)) %>% 
+  arrange(desc(proportion))
+prop_female_winners
+
+max_female_list <- list(decade = "2020", 
+                        category = "Literature")
+max_female_list
+
+ggplot(prop_female_winners, aes(decade, proportion, color = category))+
+  geom_line()+geom_point()+
+  scale_y_continuous(labels = scales::percent, limits = 0:1, expand = c(0,0))
+
+#finding the firs woman to win the Nobel prize
+first_woman <- nobel %>% 
+  filter(sex == "Female")%>% 
+  top_n(1, desc(year))
+
+first_woman_name <- first_woman$full_name
+first_woman_category <- first_woman$category
+
+#selecting the laureates that have received 2 or more prizes 
+repeats <- nobel %>% group_by(full_name) %>%
+  count() %>% 
+  filter(n>=2) 
+repeats
+
+
+
+
